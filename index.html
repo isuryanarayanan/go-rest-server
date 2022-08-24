@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Golang form client</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="card row p-5">
+      <div class="col">
+        <form action="#">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="name"
+              placeholder="Enter name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input
+              type="text"
+              class="form-control"
+              id="date"
+              name="date"
+              placeholder="Enter date"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              placeholder="Enter email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="income">Income</label>
+            <input
+              type="income"
+              class="form-control"
+              id="income"
+              name="income"
+              placeholder="Enter Income"
+            />
+          </div>
+          <div class="form-group">
+            <label for="ip">Ip</label>
+            <input
+              type="ip"
+              class="form-control"
+              id="ip"
+              name="ip"
+              placeholder="Enter ip"
+            />
+          </div>
+        </form>
+
+        <button id="btn-add-user" class="btn btn-primary">Submit</button>
+      </div>
+      <div class="col card user-list">
+        <div class="btn btn-success" id="refreshUserList">Refresh</div>
+        <h3>User List</h3>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Date</th>
+              <th scope="col">Email</th>
+              <th scope="col">Income</th>
+              <th scope="col">Ip</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+  <script>
+    function addUser() {
+      var name = document.getElementById("name").value;
+      var date = document.getElementById("date").value;
+      var email = document.getElementById("email").value;
+      var income = document.getElementById("income").value;
+      var ip = document.getElementById("ip").value;
+
+      // check if email is in proper format
+      var re =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if (!re.test(String(email).toLowerCase())) {
+        alert("Email is not in proper format");
+        return;
+      }
+
+      // check if date is in proper format
+      var re = /^\d{4}-\d{2}-\d{2}$/;
+      if (!re.test(String(date).toLowerCase())) {
+        alert("Date is not in proper format");
+        return;
+      }
+
+      // check if income is a number
+      if (isNaN(income)) {
+        alert("Income is not a number");
+        return;
+      }
+      // check if ip is in proper format
+      var re =
+        /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      if (!re.test(String(ip).toLowerCase())) {
+        alert("Ip is not in proper format");
+        return;
+      }
+      // check if name is empty
+      if (name == "") {
+        alert("Name is empty");
+        return;
+      }
+      // check if date is empty
+      if (date == "") {
+        alert("Date is empty");
+        return;
+      }
+      // check if email is empty
+      if (email == "") {
+        alert("Email is empty");
+        return;
+      }
+      // check if income is empty
+      if (income == "") {
+        alert("Income is empty");
+        return;
+      }
+      // check if ip is empty
+      if (ip == "") {
+        alert("Ip is empty");
+        return;
+      }
+
+      var data = {
+        name: name,
+        date: date,
+        email: email,
+        income: income,
+        ip: ip,
+      };
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:3000/postData", true);
+      xhr.send(JSON.stringify(data));
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          console.log(xhr.responseText);
+        }
+      };
+
+      getUsers();
+    }
+
+    function getUsers() {
+      fetch("http://localhost:3000/getData")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          document.querySelector(".user-list table tbody").innerHTML = "";
+          data.forEach((user) => {
+            let tr = document.createElement("tr");
+            let tdName = document.createElement("td");
+            let tdDate = document.createElement("td");
+            let tdEmail = document.createElement("td");
+            let tdIncome = document.createElement("td");
+            let tdIp = document.createElement("td");
+            let tdDelete = document.createElement("td");
+            tdName.innerHTML = user.Name;
+            tdDate.innerHTML = user.Date;
+            tdEmail.innerHTML = user.Email;
+            tdIncome.innerHTML = user.Income;
+            tdIp.innerHTML = user.Ip;
+            // add delete button
+            let btnDelete = document.createElement("button");
+            btnDelete.innerHTML = "Delete";
+            btnDelete.setAttribute("class", "btn btn-danger");
+            btnDelete.setAttribute("onclick", "deleteUser(" + user.ID + ")");
+            tr.appendChild(tdName);
+            tr.appendChild(tdDate);
+            tr.appendChild(tdEmail);
+            tr.appendChild(tdIncome);
+            tr.appendChild(tdIp);
+            tdDelete.appendChild(btnDelete);
+            tr.appendChild(tdDelete);
+
+            document.querySelector(".user-list table tbody").appendChild(tr);
+          }),
+            document
+              .querySelector("#refreshUserList")
+              .addEventListener("click", () => {
+                document.querySelector(".user-list table tbody").innerHTML = "";
+                getUsers();
+              }),
+            console.log("done");
+        });
+    }
+
+    function deleteUser(id) {
+      // call delete row api with id inside body
+      fetch("http://localhost:3000/deleteRow", {
+        method: "POST",
+        body: JSON.stringify({
+          ID: `${id}`,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          document.querySelector(".user-list table tbody").innerHTML = "";
+          getUsers();
+        }),
+        console.log("done");
+      getUsers();
+    }
+
+    getUsers();
+
+    // clicking on refresh button will refresh the user list
+    document.querySelector("#refreshUserList").addEventListener("click", () => {
+      getUsers();
+    });
+
+    // clicking submit button will add user to the list
+    document.querySelector("#btn-add-user").addEventListener("click", () => {
+      addUser();
+    });
+  </script>
+</html>
