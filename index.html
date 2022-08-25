@@ -233,7 +233,8 @@
       getUsers();
     }
 
-    getUsers();
+    // run get users every 5 seconds
+    setInterval(getUsers, 5000);
 
     // clicking on refresh button will refresh the user list
     document.querySelector("#refreshUserList").addEventListener("click", () => {
